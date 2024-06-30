@@ -65,6 +65,18 @@ def generate_weather_data(deviceId, timestamp, location):
         "airQualityIndex": random.uniform(0, 500),
     }
 
+def generate_emergency_incident_data(deviceId, timestamp, location):
+    return {
+        "id": uuid.uuid4(),
+        "deviceId": deviceId,
+        "incidentId": uuid.uuid4(),
+        "type": random.choice(["Accident", "Fire", "Medical", "Police", "None"]),
+        "timestamp": timestamp,
+        "location": location,
+        "status": random.choice(["Active", "Resolved"]),
+        "description": "Description of the incident"
+    }
+
 
 def simulate_vehicle_movement():
     global start_location
@@ -100,6 +112,8 @@ def simulate_journey(producer, deviceId): # Continuously generates vehicle data 
         gps_data = generate_gps_data(deviceId, vehicle_data['timestamp'])
         traffic_camera_data = generate_traffic_camera_data(deviceId, vehicle_data['timestamp'], vehicle_data['location'], 'Sony-Cam1')
         weather_data = generate_weather_data(deviceId, vehicle_data['timestamp'], vehicle_data['location'])
+        emergency_incident_data = generate_emergency_incident_data(deviceId, vehicle_data['timestamp'], vehicle_data['location'])
+        break
 
 if __name__ == '__main__':
     producer_config = {
