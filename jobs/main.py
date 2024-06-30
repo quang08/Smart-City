@@ -40,7 +40,15 @@ def generate_gps_data(deviceId, timestamp, vehicle_type='private'):
         "direction": "North-East",
         "vehicle_type": vehicle_type
     }
-    
+
+def generate_traffic_camera_data(deviceId, timestamp, camera_id):
+    return {
+        "id": uuid.uuid4(),
+        "deviceId": deviceId,
+        "timestamp": timestamp,
+        "snapshot": "Base64EncodedString" # maybe s3 encoded image url 
+    }
+
 def simulate_vehicle_movement():
     global start_location
 
@@ -73,6 +81,7 @@ def simulate_journey(producer, deviceId): # Continuously generates vehicle data 
     while True:
         vehicle_data = generate_vehicle_data(deviceId)
         gps_data = generate_gps_data(deviceId, vehicle_data['timestamp'])
+        traffic_camera_data = generate_traffic_camera_data(deviceId, vehicle_data['timestamp'], 'Sony-Cam1')
 
 if __name__ == '__main__':
     producer_config = {
