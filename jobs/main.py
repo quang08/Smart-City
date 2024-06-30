@@ -25,11 +25,22 @@ EMERGENCY_TOPIC = os.getenv("EMERGENCY_TOPIC", 'emergency_data')
 start_time = datetime.now()
 start_location = LONDON_COORDINATES.copy()
 
-def get_next_time():
+def get_next_time(): #  Updates and returns the next timestamp for vehicle data generation, with a random update frequency between 30 to 60 seconds.
+    # generate a sequence of timestamps that simulate periodic updates
     global start_time
     start_time += timedelta(seconds=random.randint(30,60)) # update frequency
     return start_time
 
+def generate_gps_data(deviceId, timestamp, vehicle_type='private'):
+    return {
+        "id": uuid.uuid4(),
+        "deviceId": deviceId,
+        "timestamp": timestamp,
+        "speed": random.uniform(0, 40), #km/h
+        "direction": "North-East",
+        "vehicle_type": vehicle_type
+    }
+    
 def simulate_vehicle_movement():
     global start_location
 
@@ -37,7 +48,7 @@ def simulate_vehicle_movement():
     start_location['latitude'] += LATITUDE_INCREMENT
     start_location['longitude'] += LONGITUDE_INCREMENT
 
-    # simulate actual road travel by incrementing random numbers
+    # simulate actual road travel by incrementing random float numbers so that it won't increment on the same number
     start_location['latitude'] += random.uniform(-0.0005, 0.0005)
     start_location['longitude'] += random.uniform(-0.0005, 0.0005)
 
@@ -58,11 +69,10 @@ def generate_vehicle_data(deviceId):
         'fuelType': 'Gas'
     }
 
-def simulate_journey(producer, deviceId):
+def simulate_journey(producer, deviceId): # Continuously generates vehicle data using generate_vehicle_data() and sends it to Kafka
     while True:
         vehicle_data = generate_vehicle_data(deviceId)
-        print(vehicle_data)
-        break
+        gps_data = generate_gps_data(deviceId, vehicle_data['timestamp'])
 
 if __name__ == '__main__':
     producer_config = {
