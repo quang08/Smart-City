@@ -22,6 +22,7 @@ TRAFFIC_TOPIC = os.getenv("TRAFFIC_TOPIC", 'traffic_data')
 WEATHER_TOPIC = os.getenv("WEATHER_TOPIC", 'weather_data')
 EMERGENCY_TOPIC = os.getenv("EMERGENCY_TOPIC", 'emergency_data')
 
+random.seed(42) # ensures that the vehicle movement simulation, the data generated for Kafka, and all other random-based operations produce the same results each time the script is executed. Good for testing
 start_time = datetime.now()
 start_location = LONDON_COORDINATES.copy()
 
@@ -41,13 +42,29 @@ def generate_gps_data(deviceId, timestamp, vehicle_type='private'):
         "vehicle_type": vehicle_type
     }
 
-def generate_traffic_camera_data(deviceId, timestamp, camera_id):
+def generate_traffic_camera_data(deviceId, timestamp,location, camera_id):
     return {
         "id": uuid.uuid4(),
         "deviceId": deviceId,
+        "location": location,
         "timestamp": timestamp,
         "snapshot": "Base64EncodedString" # maybe s3 encoded image url 
     }
+
+def generate_weather_data(deviceId, timestamp, location):
+    return {
+        "id": uuid.uuid4(),
+        "deviceId": deviceId,
+        "location": location,
+        "timestamp": timestamp,
+        "temperature": random.uniform(-5, 26),
+        "weather_condition": random.choice(["Sunny", "Cloudy", "Rain", "Snow"]),
+        "precipitation": random.uniform(0, 25),
+        "windSpeed": random.uniform(0, 100),
+        "humidity": random.uniform(0, 100), # %
+        "airQualityIndex": random.uniform(0, 500),
+    }
+
 
 def simulate_vehicle_movement():
     global start_location
@@ -81,7 +98,8 @@ def simulate_journey(producer, deviceId): # Continuously generates vehicle data 
     while True:
         vehicle_data = generate_vehicle_data(deviceId)
         gps_data = generate_gps_data(deviceId, vehicle_data['timestamp'])
-        traffic_camera_data = generate_traffic_camera_data(deviceId, vehicle_data['timestamp'], 'Sony-Cam1')
+        traffic_camera_data = generate_traffic_camera_data(deviceId, vehicle_data['timestamp'], vehicle_data['location'], 'Sony-Cam1')
+        weather_data = generate_weather_data(deviceId, vehicle_data['timestamp'], vehicle_data['location'])
 
 if __name__ == '__main__':
     producer_config = {
