@@ -107,12 +107,12 @@ def generate_vehicle_data(deviceId):
         'fuelType': 'Gas'
     }
 
-def json_serializer(obj):
+def json_serializer(obj): # convert specific objects into JSON serializable formats.
     if isinstance(obj, uuid.UUID):
         return str(obj)
     raise TypeError(f'Object of Type {obj.__class__.__name__} is not JSON serializable')
 
-def delivery_report(err, msg):
+def delivery_report(err, msg): # callback used to handle delivery reports from Kafka,
     if err is not None:
         print(f'Message delivery failed: {err}')
     else:
@@ -122,7 +122,7 @@ def produce_data_to_kafka(producer, topic, data):
     producer.produce(
         topic,
         key=str(data['id']),
-        value=json.dumps(data, default=json_serializer).encode('utf-8'),
+        value=json.dumps(data, default=json_serializer).encode('utf-8'), # data obj convert to json string, then ensures UUIDs convert to strings, then encode to turn JSON string to byte string by Kafka standard 
         on_delivery=delivery_report
     ) 
 
