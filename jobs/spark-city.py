@@ -3,6 +3,7 @@
 from pyspark.sql import SparkSession
 from config import configuration
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType, IntegerType
+from pyspark.sql.functions import from_json, col
 
 def main():
     spark = SparkSession.builder.appName("SmartCityStreaming")\
@@ -78,6 +79,25 @@ def main():
         StructField("status", StringType(), True),
         StructField("description", StringType(), True),
     }
+
+    def read_kafka_topic(topic, schema):
+        return (spark.readStream
+                .format('kafka')
+                .option('kafka.bootstrap.servers', 'broker:29092')
+                .option('subscribe', topic)
+                .option('startingOffsets', 'earliest')
+                .load()
+                .selectExpr('CAST(values as STRING')
+                .select(from_json(col('value'), schema).alias('data'))
+                .select('data.*')
+                .withWatermark('timestamp', '2 minutes')
+        )
+
+    vehicleDF = read_kafka_topic('vehicle_data', vehicleSchema).alias('vehicle')
+    gpsDF = read_kafka_topic('gps_data', gpsSchema).alias('gps')
+    trafficDF = read_kafka_topic('traffic_data', trafficSchema).alias('traffic')
+    weatherDF = read_kafka_topic('weather_data', weatherSchema).alias('weather')
+    emergencyDF = read_kafka_topic('emergency_data', emergencySchema).alias('emergency')
 
 if __name__ == "__main__":
     main()
