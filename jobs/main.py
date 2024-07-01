@@ -47,6 +47,7 @@ def generate_traffic_camera_data(deviceId, timestamp,location, camera_id):
     return {
         "id": uuid.uuid4(),
         "deviceId": deviceId,
+        "cameraId": camera_id,
         "location": location,
         "timestamp": timestamp,
         "snapshot": "Base64EncodedString" # maybe s3 encoded image url 
